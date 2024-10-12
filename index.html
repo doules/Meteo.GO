@@ -21,7 +21,7 @@
         document.body.appendChild(renderer.domElement);
 
         // Фон
-        scene.background = new THREE.Color(0x000000);  // Черный фон
+        scene.background = new THREE.Color(0x000000); // Черный фон
 
         // Освещение
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Увеличиваем яркость ambientLight
@@ -36,6 +36,18 @@
         loader.load('models/Earth.glb', (gltf) => {
             model = gltf.scene;
             model.scale.set(1.5, 1.5, 1.5); // Масштаб модели
+            
+            // Удаляем эффект металличности и устанавливаем натуральный цвет
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    child.material = new THREE.MeshStandardMaterial({
+                        color: child.material.color,
+                        roughness: 0.5,
+                        metalness: 0 // Убираем эффект металличности
+                    });
+                }
+            });
+
             scene.add(model);
         });
 
@@ -92,9 +104,6 @@
 
             // Ограничение на минимальное расстояние до модели
             const minDistance = 3; // Минимальное расстояние от камеры до модели
-
-> ChatGPT + Midjourney:
-
             camera.position.z = Math.max(minDistance, camera.position.z);
 
             // Увеличение текстуры после достижения определенного близости
@@ -110,6 +119,10 @@
         // Анимация
         function animate() {
             requestAnimationFrame(animate);
+            // Автомобильное вращение модели
+            if (model) {
+                model.rotation.y += 0.01; // Плавное вращение модели
+            }
             renderer.render(scene, camera);
         }
         animate();
