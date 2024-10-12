@@ -24,7 +24,7 @@
         scene.background = new THREE.Color(0x000000); // Черный фон
 
         // Освещение
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Увеличенная интенсивность
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
         const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
         directionalLight.position.set(5, 5, 5).normalize();
@@ -42,9 +42,9 @@
             model.traverse((child) => {
                 if (child.isMesh) {
                     child.material = new THREE.MeshStandardMaterial({
-                        color: 0xffffff, // Более светлый цвет
-                        roughness: 0.5, // Уменьшенная грубость
-                        metalness: 0.3 // Увеличенная металличность
+                        color: 0xdddddd, // Чуть светлее
+                        roughness: 0.5,
+                        metalness: 0.3
                     });
                 }
             });
@@ -101,8 +101,8 @@
                     if (child.isMesh && child.material.map) {
                         child.material.map.repeat.set(2, 2); // Увеличиваем текстуры
                     }
-                    });
-            } else if (model) {
+                });
+                } else if (model) {
                 model.traverse((child) => {
                     if (child.isMesh && child.material.map) {
                         child.material.map.repeat.set(1, 1); // Сбрасываем текстуры
@@ -112,6 +112,27 @@
 
             event.preventDefault();
         });
+
+        // Создание звездного неба
+        function createStars() {
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = 1000; // Количество звезд
+            const positions = new Float32Array(starCount * 3);
+
+            for (let i = 0; i < starCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 200; // X координата
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 200; // Y координата
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 200; // Z координата
+            }
+
+            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            
+            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 });
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+        }
+
+        createStars();
 
         // Анимация
         function animate() {
