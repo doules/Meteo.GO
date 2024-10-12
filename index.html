@@ -1,3 +1,5 @@
+html
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -24,7 +26,7 @@
         scene.background = new THREE.Color(0xC4D3EB);
 
         // Освещение
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Увеличиваем интенсивность
         scene.add(ambientLight);
         const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
         directionalLight.position.set(5, 5, 5).normalize();
@@ -81,6 +83,22 @@
             const minDistance = 3; // Минимальное расстояние от камеры до модели
             camera.position.z = Math.max(minDistance, camera.position.z);
 
+            // Увеличение текстур при приближении
+            const textureScaleThreshold = 5; // Порог для увеличения текстур
+            if (camera.position.z < textureScaleThreshold && model) {
+                model.traverse((child) => {
+                    if (child.isMesh && child.material.map) {
+                        child.material.map.repeat.set(2, 2); // Увеличиваем текстуры
+                    }
+                });
+            } else if (model) {
+                model.traverse((child) => {
+                    if (child.isMesh && child.material.map) {
+                        child.material.map.repeat.set(1, 1); // Сбрасываем текстуры
+                    }
+                });
+            }
+
             event.preventDefault();
         });
 
@@ -89,8 +107,7 @@
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
         }
-        animate();
-
+        animate(); 
         // Обновление размера окна
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
