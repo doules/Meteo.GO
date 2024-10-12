@@ -21,10 +21,10 @@
         document.body.appendChild(renderer.domElement);
 
         // Фон
-        scene.background = new THREE.Color(0x000000); // Черный фон
+        scene.background = new THREE.Color(0x000000);  // Черный фон
 
         // Освещение
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Увеличиваем яркость ambientLight
         scene.add(ambientLight);
         const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
         directionalLight.position.set(5, 5, 5).normalize();
@@ -33,32 +33,34 @@
         // Загрузка модели
         const loader = new THREE.GLTFLoader();
         let model;
-        
-        loader.load('models/model.glb', (gltf) => {
+        loader.load('models/Earth.glb', (gltf) => {
             model = gltf.scene;
-            model.scale.set(3, 3, 3); // Увеличиваем масштаб модели
-            
-            // Изменение материала для улучшения видимости
-            model.traverse((child) => {
-                if (child.isMesh) {
-                    child.material = new THREE.MeshStandardMaterial({
-                        color: 0xdddddd, // Чуть светлее
-                        roughness: 0.5,
-                        metalness: 0.3
-                    });
-                }
-            });
-
+            model.scale.set(1.5, 1.5, 1.5); // Масштаб модели
             scene.add(model);
         });
 
         // Позиция камеры
-        camera.position.set(0, 0, 10); // Увеличиваем расстояние до модели
+        camera.position.set(0, 0, 5); // Удаляем камеру дальше
+
+        // Звезды
+        const starGeometry = new THREE.BufferGeometry();
+        const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
+        const starVertices = [];
+
+        for (let i = 0; i < 1000; i++) {
+            const x = (Math.random() - 0.5) * 200; // Случайные координаты по X
+            const y = (Math.random() - 0.5) * 200; // Случайные координаты по Y
+            const z = (Math.random() - 0.5) * 200; // Случайные координаты по Z
+            starVertices.push(x, y, z);
+        }
+
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
 
         // Управление мышью
         let isDragging = false;
         let previousMousePosition = { x: 0, y: 0 };
-
         window.addEventListener('mousedown', (event) => {
             if (event.button === 0) { // ЛКМ
                 isDragging = true;
@@ -76,63 +78,34 @@
                     x: event.clientX - previousMousePosition.x,
                     y: event.clientY - previousMousePosition.y
                 };
-
                 // Поворот модели
                 model.rotation.y += deltaMove.x * 0.01;
                 model.rotation.x += deltaMove.y * 0.01;
-
                 previousMousePosition = { x: event.clientX, y: event.clientY };
             }
         });
 
-        let zoomSpeed = 0.2; // Уменьшаем скорость зума для более плавного приближения
-
+        // Зум
         window.addEventListener('wheel', (event) => {
-            camera.position.z += event.deltaY * zoomSpeed * 0.01;
+            const zoomSpeed = 0.1;
+            camera.position.z += event.deltaY * zoomSpeed;
 
             // Ограничение на минимальное расстояние до модели
             const minDistance = 3; // Минимальное расстояние от камеры до модели
+
+> ChatGPT + Midjourney:
+
             camera.position.z = Math.max(minDistance, camera.position.z);
 
-            // Увеличение текстур при приближении
-            const textureScaleThreshold = 5; // Порог для увеличения текстур
-            if (camera.position.z < textureScaleThreshold && model) {
-                model.traverse((child) => {
-                    if (child.isMesh && child.material.map) {
-                        child.material.map.repeat.set(2, 2); // Увеличиваем текстуры
-                    }
-                });
-                } else if (model) {
-                model.traverse((child) => {
-                    if (child.isMesh && child.material.map) {
-                        child.material.map.repeat.set(1, 1); // Сбрасываем текстуры
-                    }
-                });
+            // Увеличение текстуры после достижения определенного близости
+            if (camera.position.z < 2.5) {
+                model.scale.set(1.5 * (3 - camera.position.z), 1.5 * (3 - camera.position.z), 1.5 * (3 - camera.position.z));
+            } else {
+                model.scale.set(1.5, 1.5, 1.5);
             }
 
             event.preventDefault();
         });
-
-        // Создание звездного неба
-        function createStars() {
-            const starGeometry = new THREE.BufferGeometry();
-            const starCount = 1000; // Количество звезд
-            const positions = new Float32Array(starCount * 3);
-
-            for (let i = 0; i < starCount; i++) {
-                positions[i * 3] = (Math.random() - 0.5) * 200; // X координата
-                positions[i * 3 + 1] = (Math.random() - 0.5) * 200; // Y координата
-                positions[i * 3 + 2] = (Math.random() - 0.5) * 200; // Z координата
-            }
-
-            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-            
-            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 });
-            const stars = new THREE.Points(starGeometry, starMaterial);
-            scene.add(stars);
-        }
-
-        createStars();
 
         // Анимация
         function animate() {
