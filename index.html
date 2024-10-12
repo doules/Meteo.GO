@@ -1,5 +1,3 @@
-html
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -26,9 +24,9 @@ html
         scene.background = new THREE.Color(0xC4D3EB);
 
         // Освещение
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Увеличиваем интенсивность
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.5); // Увеличиваем интенсивность
         scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 2); // Увеличиваем интенсивность
         directionalLight.position.set(5, 5, 5).normalize();
         scene.add(directionalLight);
 
@@ -39,6 +37,18 @@ html
         loader.load('models/model.glb', (gltf) => {
             model = gltf.scene;
             model.scale.set(3, 3, 3); // Увеличиваем масштаб модели
+            
+            // Изменение материала для лучшего отражения света
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    child.material = new THREE.MeshStandardMaterial({
+                        color: 0xffffff, // Цвет материала
+                        roughness: 0.5, // Гладкость
+                        metalness: 0.5 // Металличность
+                    });
+                }
+            });
+
             scene.add(model);
         });
 
@@ -89,7 +99,7 @@ html
                 model.traverse((child) => {
                     if (child.isMesh && child.material.map) {
                         child.material.map.repeat.set(2, 2); // Увеличиваем текстуры
-                    }
+                     }
                 });
             } else if (model) {
                 model.traverse((child) => {
@@ -107,7 +117,8 @@ html
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
         }
-        animate(); 
+        animate();
+
         // Обновление размера окна
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
