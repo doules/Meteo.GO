@@ -21,30 +21,30 @@
         document.body.appendChild(renderer.domElement);
 
         // Фон
-        scene.background = new THREE.Color(0xC4D3EB);
+        scene.background = new THREE.Color(0x000000); // Черный фон
 
         // Освещение
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Уменьшенная интенсивность
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Увеличенная интенсивность
         scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Уменьшенная интенсивность
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
         directionalLight.position.set(5, 5, 5).normalize();
         scene.add(directionalLight);
 
         // Загрузка модели
         const loader = new THREE.GLTFLoader();
         let model;
-
+        
         loader.load('models/model.glb', (gltf) => {
             model = gltf.scene;
             model.scale.set(3, 3, 3); // Увеличиваем масштаб модели
             
-            // Изменение материала для лучшего отражения света
+            // Изменение материала для улучшения видимости
             model.traverse((child) => {
                 if (child.isMesh) {
                     child.material = new THREE.MeshStandardMaterial({
-                        color: 0xffffff, // Цвет материала
-                        roughness: 0.7, // Увеличиваем грубость для лучшего отображения текстур
-                        metalness: 0.2 // Уменьшаем металличность
+                        color: 0xffffff, // Более светлый цвет
+                        roughness: 0.5, // Уменьшенная грубость
+                        metalness: 0.3 // Увеличенная металличность
                     });
                 }
             });
@@ -86,6 +86,7 @@
         });
 
         let zoomSpeed = 0.2; // Уменьшаем скорость зума для более плавного приближения
+
         window.addEventListener('wheel', (event) => {
             camera.position.z += event.deltaY * zoomSpeed * 0.01;
 
@@ -100,7 +101,7 @@
                     if (child.isMesh && child.material.map) {
                         child.material.map.repeat.set(2, 2); // Увеличиваем текстуры
                     }
-                });
+                    });
             } else if (model) {
                 model.traverse((child) => {
                     if (child.isMesh && child.material.map) {
