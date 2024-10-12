@@ -24,9 +24,9 @@
         scene.background = new THREE.Color(0xC4D3EB);
 
         // Освещение
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.5); // Увеличиваем интенсивность
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Уменьшенная интенсивность
         scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 2); // Увеличиваем интенсивность
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Уменьшенная интенсивность
         directionalLight.position.set(5, 5, 5).normalize();
         scene.add(directionalLight);
 
@@ -43,8 +43,8 @@
                 if (child.isMesh) {
                     child.material = new THREE.MeshStandardMaterial({
                         color: 0xffffff, // Цвет материала
-                        roughness: 0.5, // Гладкость
-                        metalness: 0.5 // Металличность
+                        roughness: 0.7, // Увеличиваем грубость для лучшего отображения текстур
+                        metalness: 0.2 // Уменьшаем металличность
                     });
                 }
             });
@@ -99,7 +99,7 @@
                 model.traverse((child) => {
                     if (child.isMesh && child.material.map) {
                         child.material.map.repeat.set(2, 2); // Увеличиваем текстуры
-                     }
+                    }
                 });
             } else if (model) {
                 model.traverse((child) => {
