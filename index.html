@@ -92,11 +92,10 @@
 
         let zoomSpeed = 0.2; 
         window.addEventListener('wheel', (event) => {
-            camera.position.z += event.deltaY * zoomSpeed * 0.01;
+            camera.position.z += event.deltaY * zoomSpeed * 0.005;
 
             // Ограничение на минимальное расстояние до модели
-            const minDistance = 3; 
-            camera.position.z = Math.max(minDistance, camera.position.z);
+           camera.position.z = Math.max(minDistance, Math.min(maxDistance, camera.position.z));
             event.preventDefault();
         });
 
