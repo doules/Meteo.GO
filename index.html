@@ -7,6 +7,7 @@
     <style>
         body { margin: 0; }
         canvas { display: block; }
+        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; }
     </style>
 </head>
 <body>
@@ -36,39 +37,11 @@
         loader.load('models/model.glb', (gltf) => {
             model = gltf.scene;
             model.scale.set(3, 3, 3); // Увеличиваем масштаб модели
-
-            // Устранение эффекта металличности
-            model.traverse((child) => {
-                if (child.isMesh) {
-                    child.material = new THREE.MeshStandardMaterial({
-                        color: child.material.color,
-                        roughness: 0.5,
-                        metalness: 0 // Убираем эффект металличности
-                    });
-                }
-            });
-
             scene.add(model);
         });
 
         // Позиция камеры
         camera.position.set(0, 0, 10); // Увеличиваем расстояние до модели
-
-        // Звезды
-        const starGeometry = new THREE.BufferGeometry();
-        const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.2, sizeAttenuation: true, transparent: true, opacity: 0.8 });
-        const starVertices = [];
-
-        for (let i = 0; i < 500; i++) {
-            const x = (Math.random() - 0.5) * 200; // Случайные координаты по X
-            const y = (Math.random() - 0.5) * 200; // Случайные координаты по Y
-            const z = (Math.random() - 0.5) * 200; // Случайные координаты по Z
-            starVertices.push(x, y, z);
-        }
-
-        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-        const stars = new THREE.Points(starGeometry, starMaterial);
-        scene.add(stars);
 
         // Управление мышью
         let isDragging = false;
@@ -97,35 +70,52 @@
             }
         });
 
-        // Зум с увеличением текстур
-        const zoomSpeed = 0.1; // Плавное приближение
-        const maxDistance = 3; // Минимальное расстояние для увеличения текстур
-
+        let zoomSpeed = 0.2; // Уменьшаем скорость зума для более плавного приближения
         window.addEventListener('wheel', (event) => {
             camera.position.z += event.deltaY * zoomSpeed * 0.01;
 
             // Ограничение на минимальное расстояние до модели
-            camera.position.z = Math.max(maxDistance, camera.position.z);
+            const minDistance = 3; // Минимальное расстояние от камеры до модели
+            camera.position.z = Math.max(minDistance, camera.position.z);
 
-            // Увеличение текстуры при приближении
+            // Увеличение текстур при приближении
+            const maxDistance = 5; // Максимальное расстояние для увеличения текстур
             if (camera.position.z < maxDistance) {
-                const scaleFactor = (maxDistance - camera.position.z) * 0.5; // Определение коэффициента масштабирования
-                model.scale.set(3 + scaleFactor, 3 + scaleFactor, 3 + scaleFactor); // Увеличение масштаба модели
-            } else {
-                model.scale.set(3, 3, 3); // Сбрасываем масштаб в обычное состояние
+                const scaleFactor = (maxDistance - camera.position.z) / maxDistance;
+                model.scale.set(3 * scaleFactor, 3 * scaleFactor, 3 * scaleFactor);
             }
+
             event.preventDefault();
         });
+
+        // Создание звездного неба
+        function createStars() {
+            const starCount = 100; // Количество звезд
+            for (let i = 0; i < starCount; i++) {
+                const starGeometry = new THREE.CircleGeometry(0.02, 32);
+                const starMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const star = new THREE.Mesh(starGeometry, starMaterial);
+
+                // Позиция звезды в случайном месте
+                star.position.x = Math.random() * 200 - 100;
+                star.position.y = Math.random() * 200 - 100;
+                star.position.z = Math.random() * -200;
+
+                scene.add(star);
+            }
+        }
+
+        createStars(); // Создаем звезды
 
         // Анимация
         function animate() {
             requestAnimationFrame(animate);
-            // Автомобильное вращение модели
             if (model) {
-                model.rotation.y += 0.01; // Плавное вращение модели
+                model.rotation.y += 0.01; // Автоматическое вращение модели
             }
             renderer.render(scene, camera);
         }
+        
         animate();
 
         // Обновление размера окна
