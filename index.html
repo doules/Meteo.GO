@@ -24,7 +24,7 @@
         scene.background = new THREE.Color(0x000000); // Черный фон
 
         // Освещение
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Увеличиваем яркость ambientLight
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
         const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
         directionalLight.position.set(5, 5, 5).normalize();
@@ -33,11 +33,11 @@
         // Загрузка модели
         const loader = new THREE.GLTFLoader();
         let model;
-        loader.load('models/Earth.glb', (gltf) => {
+        loader.load('models/model.glb', (gltf) => {
             model = gltf.scene;
-            model.scale.set(1.5, 1.5, 1.5); // Масштаб модели
-            
-            // Удаляем эффект металличности и устанавливаем натуральный цвет
+            model.scale.set(3, 3, 3); // Увеличиваем масштаб модели
+
+            // Устранение эффекта металличности
             model.traverse((child) => {
                 if (child.isMesh) {
                     child.material = new THREE.MeshStandardMaterial({
@@ -52,14 +52,14 @@
         });
 
         // Позиция камеры
-        camera.position.set(0, 0, 5); // Удаляем камеру дальше
+        camera.position.set(0, 0, 10); // Увеличиваем расстояние до модели
 
         // Звезды
         const starGeometry = new THREE.BufferGeometry();
-        const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
+        const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.2, sizeAttenuation: true, transparent: true, opacity: 0.8 });
         const starVertices = [];
 
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 500; i++) {
             const x = (Math.random() - 0.5) * 200; // Случайные координаты по X
             const y = (Math.random() - 0.5) * 200; // Случайные координаты по Y
             const z = (Math.random() - 0.5) * 200; // Случайные координаты по Z
@@ -97,22 +97,23 @@
             }
         });
 
-        // Зум
+        // Зум с увеличением текстур
+        const zoomSpeed = 0.1; // Плавное приближение
+        const maxDistance = 3; // Минимальное расстояние для увеличения текстур
+
         window.addEventListener('wheel', (event) => {
-            const zoomSpeed = 0.1;
-            camera.position.z += event.deltaY * zoomSpeed;
+            camera.position.z += event.deltaY * zoomSpeed * 0.01;
 
             // Ограничение на минимальное расстояние до модели
-            const minDistance = 3; // Минимальное расстояние от камеры до модели
-            camera.position.z = Math.max(minDistance, camera.position.z);
+            camera.position.z = Math.max(maxDistance, camera.position.z);
 
-            // Увеличение текстуры после достижения определенного близости
-            if (camera.position.z < 2.5) {
-                model.scale.set(1.5 * (3 - camera.position.z), 1.5 * (3 - camera.position.z), 1.5 * (3 - camera.position.z));
+            // Увеличение текстуры при приближении
+            if (camera.position.z < maxDistance) {
+                const scaleFactor = (maxDistance - camera.position.z) * 0.5; // Определение коэффициента масштабирования
+                model.scale.set(3 + scaleFactor, 3 + scaleFactor, 3 + scaleFactor); // Увеличение масштаба модели
             } else {
-                model.scale.set(1.5, 1.5, 1.5);
+                model.scale.set(3, 3, 3); // Сбрасываем масштаб в обычное состояние
             }
-
             event.preventDefault();
         });
 
