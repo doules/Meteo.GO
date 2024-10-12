@@ -43,26 +43,25 @@
         camera.position.set(0, 0, 10); // Увеличиваем расстояние до модели
 
         // Звезды
-        function createStars() {
-            const starGeometry = new THREE.CircleGeometry(0.02, 32); // Маленькие круги для звезд
-            const starMaterial = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0.5,
-                depthWrite: false,
-                blending: THREE.AdditiveBlending // Эффект свечения
-            });
+            function createStars() {
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = 1000; // Количество звезд
+            const positions = new Float32Array(starCount * 3);
 
-            for (let i = 0; i < 100; i++) { // Плотность звезд
-                const star = new THREE.Mesh(starGeometry, starMaterial);
-                const [x, y, z] = Array.from({ length: 3 }, () => (Math.random() - 0.5) * 200);
-                star.position.set(x, y, z);
-                star.scale.set(Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5); // Разные размеры
-                scene.add(star);
+            for (let i = 0; i < starCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 200; // X координата
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 200; // Y координата
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 200; // Z координата
             }
+
+            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            
+            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 });
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
         }
 
-        createStars(); // Создаем звезды
+        createStars();
 
         // Управление мышью
         let isDragging = false;
